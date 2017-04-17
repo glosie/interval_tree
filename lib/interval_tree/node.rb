@@ -13,7 +13,6 @@ module IntervalTree
     end
 
     def overlaps?(other)
-      return false unless other.is_a?(Range)
       range.min <= other.max && range.max >= other.min
     end
   end
