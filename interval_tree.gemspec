@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["glosie@gmail.com"]
 
   spec.summary       = "A partial Ruby interval tree implementation"
-  spec.description   = "A partialRuby interval tree implementation"
+  spec.description   = "A partial Ruby interval tree implementation"
   spec.homepage      = "https://github.com/glosie/interval_tree"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
