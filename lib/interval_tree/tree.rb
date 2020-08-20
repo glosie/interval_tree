@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module IntervalTree
   class Tree
     attr_reader :root
