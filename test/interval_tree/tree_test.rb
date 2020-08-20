@@ -15,7 +15,6 @@ module IntervalTree
       assert_equal 1..10, t.root.range
       assert_nil t.root.left
       assert_nil t.root.right
-      assert_equal 1, t.root.min
       assert_equal 10, t.root.max
     end
 
@@ -51,11 +50,9 @@ module IntervalTree
 
       assert_equal d1..d3, t.root.range
 
-      assert_equal d1, t.root.left.min
       assert_equal d2, t.root.left.max
       assert_equal d1..d2, t.root.left.range
 
-      assert_equal d2, t.root.right.min
       assert_equal d3, t.root.right.max
       assert_equal d1..d3, t.root.range
     end

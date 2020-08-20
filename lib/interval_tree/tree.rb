@@ -30,20 +30,18 @@ module IntervalTree
 
       # find center point
       center = ranges.length / 2
-      range = ranges[center]
+      range  = ranges[center]
 
       # construct subtrees
-      left = construct(ranges.slice(0, center))
+      left  = construct(ranges.slice(0, center))
       right = construct(ranges[(center + 1)..-1])
 
-      array = [range, left, right]
-      array.compact!
+      array = [range, left, right].compact
 
       Node.new(
         range: range,
         left: left,
         right: right,
-        min: array.map(&:min).min, # subtree min
         max: array.map(&:max).max  # subtree max
       )
     end
@@ -67,7 +65,7 @@ module IntervalTree
       results << node.range if node.overlaps?(q)
 
       # search right children
-      search_nodes(q, right, results) if right && (q.max >= right.min)
+      search_nodes(q, right, results) if right && (q.min <= right.max)
     end
   end
 end
