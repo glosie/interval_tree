@@ -13,13 +13,13 @@ module IntervalTree
 
     # Search for all intervals in the tree that intersect with `range`
     #
-    # @param q [Range] the range to search for
+    # @param interval [Range] the search interval
     # @return [Array] the array of search results
-    def search(q)
-      q = q.is_a?(Range) ? q : (q..q)
-      results = []
+    def search(interval)
+      interval = interval.is_a?(Range) ? interval : (interval..interval)
+      results  = []
 
-      search_nodes(q, root, results)
+      search_nodes(interval, root, results)
       results
     end
 
@@ -42,7 +42,7 @@ module IntervalTree
         range: range,
         left: left,
         right: right,
-        max: array.map(&:max).max  # subtree max
+        max: array.map(&:max).max # subtree max
       )
     end
 
@@ -52,20 +52,24 @@ module IntervalTree
     # @param q [Range] the range query
     # @param node [IntervalTree::Node] the current "root" node
     # @param results [Array] the accumulated results
-    def search_nodes(q, node, results)
+    def search_nodes(interval, node, results)
       return if node.nil?
 
-      left = node.left
-      right = node.right
+      left_subtree  = node.left
+      right_subtree = node.right
 
-      # search left children
-      search_nodes(q, left, results) if left && (q.min <= left.max)
+      # search left subtree
+      if left_subtree && (interval.min <= left_subtree.max)
+        search_nodes(interval, left_subtree, results)
+      end
 
       # add current interval to results if it overlaps
-      results << node.range if node.overlaps?(q)
+      results << node.range if node.overlaps?(interval)
 
-      # search right children
-      search_nodes(q, right, results) if right && (q.min <= right.max)
+      # search right subtree
+      if right_subtree && (interval.min <= right_subtree.max)
+        search_nodes(interval, right_subtree, results)
+      end
     end
   end
 end
