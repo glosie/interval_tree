@@ -36,7 +36,8 @@ module IntervalTree
       left = construct(ranges.slice(0, center))
       right = construct(ranges[(center + 1)..-1])
 
-      array = [range, left, right].compact
+      array = [range, left, right]
+      array.compact!
 
       Node.new(
         range: range,
