@@ -19,7 +19,7 @@ module IntervalTree
     # @return [Array] the array of search results
     def search(interval)
       interval = interval.is_a?(Range) ? interval : (interval..interval)
-      results  = []
+      results = []
 
       search_nodes(interval, root, results)
       results
@@ -32,10 +32,10 @@ module IntervalTree
 
       # find center point
       center = ranges.length / 2
-      range  = ranges[center]
+      range = ranges[center]
 
       # construct subtrees
-      left  = construct(ranges.slice(0, center))
+      left = construct(ranges.slice(0, center))
       right = construct(ranges[(center + 1)..-1])
 
       array = [range, left, right].compact
@@ -57,7 +57,7 @@ module IntervalTree
     def search_nodes(interval, node, results)
       return if node.nil?
 
-      left_subtree  = node.left
+      left_subtree = node.left
       right_subtree = node.right
 
       # search left subtree
