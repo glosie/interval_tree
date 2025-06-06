@@ -4,8 +4,6 @@ source 'https://rubygems.org'
 gemspec
 
 gem "bundler"
-gem "guard"
-gem "guard-minitest"
 gem "minitest"
 gem "minitest-focus"
 gem "minitest-reporters"
