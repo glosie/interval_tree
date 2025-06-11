@@ -16,20 +16,19 @@ module IntervalTree
     # Search for all intervals in the tree that intersect with `range`
     #
     # @param interval [Range] the search interval
-    # @return [Array] the array of search results
+    # @return [SearchResultsEnumerator] enumerator for lazy evaluation of search results
     def search(interval)
       interval = interval.is_a?(Range) ? interval : (interval..interval)
-      results = []
 
       # Cache interval.min to avoid repeated method calls during traversal
-      # Handle edge case of beginless ranges
       begin
         interval_min = interval.min
+      # Handle edge case of beginless ranges
       rescue RangeError
         interval_min = interval.begin
       end
-      search_nodes(interval, interval_min, root, results)
-      results
+
+      SearchResultsEnumerator.new(root, interval, interval_min)
     end
 
     private
@@ -53,31 +52,5 @@ module IntervalTree
       Node.new(range, left, right, max_val)
     end
 
-    # Performs a recursive membership query on the current node and it's
-    # subtrees
-    #
-    # @param interval [Range] the range query
-    # @param interval_min [Integer] cached minimum value of the interval
-    # @param node [IntervalTree::Node] the current "root" node
-    # @param results [Array] the accumulated results
-    def search_nodes(interval, interval_min, node, results)
-      return if node.nil?
-
-      left_subtree = node.left
-      right_subtree = node.right
-
-      # search left subtree
-      if left_subtree && (interval_min <= left_subtree.max)
-        search_nodes(interval, interval_min, left_subtree, results)
-      end
-
-      # add current interval to results if it overlaps
-      results << node.range if node.overlaps?(interval)
-
-      # search right subtree
-      if right_subtree && (interval_min <= right_subtree.max)
-        search_nodes(interval, interval_min, right_subtree, results)
-      end
-    end
   end
 end
