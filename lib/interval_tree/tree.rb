@@ -43,12 +43,7 @@ module IntervalTree
       max_val = [max_val, left.max].max if left
       max_val = [max_val, right.max].max if right
 
-      Node.new(
-        range: range,
-        left: left,
-        right: right,
-        max: max_val
-      )
+      Node.new(range, left, right, max_val)
     end
 
     # Performs a recursive membership query on the current node and it's
