@@ -21,7 +21,14 @@ module IntervalTree
       interval = interval.is_a?(Range) ? interval : (interval..interval)
       results = []
 
-      search_nodes(interval, root, results)
+      # Cache interval.min to avoid repeated method calls during traversal
+      # Handle edge case of beginless ranges
+      begin
+        interval_min = interval.min
+      rescue RangeError
+        interval_min = interval.begin
+      end
+      search_nodes(interval, interval_min, root, results)
       results
     end
 
@@ -49,26 +56,27 @@ module IntervalTree
     # Performs a recursive membership query on the current node and it's
     # subtrees
     #
-    # @param q [Range] the range query
+    # @param interval [Range] the range query
+    # @param interval_min [Integer] cached minimum value of the interval
     # @param node [IntervalTree::Node] the current "root" node
     # @param results [Array] the accumulated results
-    def search_nodes(interval, node, results)
+    def search_nodes(interval, interval_min, node, results)
       return if node.nil?
 
       left_subtree = node.left
       right_subtree = node.right
 
       # search left subtree
-      if left_subtree && (interval.min <= left_subtree.max)
-        search_nodes(interval, left_subtree, results)
+      if left_subtree && (interval_min <= left_subtree.max)
+        search_nodes(interval, interval_min, left_subtree, results)
       end
 
       # add current interval to results if it overlaps
       results << node.range if node.overlaps?(interval)
 
       # search right subtree
-      if right_subtree && (interval.min <= right_subtree.max)
-        search_nodes(interval, right_subtree, results)
+      if right_subtree && (interval_min <= right_subtree.max)
+        search_nodes(interval, interval_min, right_subtree, results)
       end
     end
   end
