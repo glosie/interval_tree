@@ -10,7 +10,7 @@ module IntervalTree
     # @param sorted [Boolean] specify if `intervals` is already sorted
     def initialize(intervals, sorted: false)
       intervals.sort_by! { |r| [r.min, r.max] } unless sorted
-      @root = construct(intervals)
+      @root = construct(intervals, 0, intervals.length - 1)
     end
 
     # Search for all intervals in the tree that intersect with `range`
@@ -27,24 +27,27 @@ module IntervalTree
 
     private
 
-    def construct(ranges)
-      return nil if ranges.empty?
+    def construct(ranges, start_idx, end_idx)
+      return nil if start_idx > end_idx
 
       # find center point
-      center = ranges.length / 2
+      length = end_idx - start_idx + 1
+      center = start_idx + length / 2
       range = ranges[center]
 
       # construct subtrees
-      left = construct(ranges.slice(0, center))
-      right = construct(ranges[(center + 1)..-1])
+      left = construct(ranges, start_idx, center - 1)
+      right = construct(ranges, center + 1, end_idx)
 
-      array = [range, left, right].compact
+      max_val = range.max
+      max_val = [max_val, left.max].max if left
+      max_val = [max_val, right.max].max if right
 
       Node.new(
         range: range,
         left: left,
         right: right,
-        max: array.map(&:max).max # subtree max
+        max: max_val
       )
     end
 
