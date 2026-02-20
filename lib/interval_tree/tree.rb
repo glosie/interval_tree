@@ -9,7 +9,7 @@ module IntervalTree
     # @param intervals [Array<Range>] the intervals to construct the tree from
     # @param sorted [Boolean] specify if `intervals` is already sorted
     def initialize(intervals, sorted: false)
-      intervals.sort_by! { |r| [r.min, r.max] } unless sorted
+      intervals = intervals.sort_by { |r| [r.min, r.max] } unless sorted
       @root = construct(intervals, 0, intervals.length - 1)
     end
 

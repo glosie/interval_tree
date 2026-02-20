@@ -78,5 +78,19 @@ module IntervalTree
 
       assert_kind_of IntervalTree::SearchResultsEnumerator, results
     end
+
+    def test_does_not_mutate_input_array
+      intervals = [5..6, 1..2, 3..4]
+      original = intervals.dup
+      Tree.new(intervals)
+
+      assert_equal original, intervals
+    end
+
+    def test_accepts_frozen_array
+      intervals = [5..6, 1..2, 3..4].freeze
+
+      Tree.new(intervals)
+    end
   end
 end
