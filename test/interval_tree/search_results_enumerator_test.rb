@@ -86,6 +86,23 @@ module IntervalTree
       assert_equal 4, @results.length
     end
 
+    def test_count_with_block_returns_filtered_count
+      assert_equal 2, @results.count { |r| r.min >= 3 }
+      assert_equal 1, @results.count { |r| r.min == 1 }
+    end
+
+    def test_count_with_argument_returns_value_count
+      assert_equal 1, @results.count(2..4)
+      assert_equal 0, @results.count(99..100)
+    end
+
+    def test_count_without_args_is_memoized
+      first = @results.count
+      second = @results.count
+      assert_equal first, second
+      assert_equal 4, first
+    end
+
     def test_count_size_length_return_zero_for_empty_results
       no_match_interval = 20..30
       empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min)

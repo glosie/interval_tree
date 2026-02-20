@@ -38,12 +38,21 @@ module IntervalTree
 
     # Count results with memoization for performance
     #
+    # When called without arguments or a block, returns the memoized total
+    # count. Otherwise delegates to Enumerable#count to support filtered
+    # counting (e.g. count { |r| r.min >= 5 }) and value counting
+    # (e.g. count(3..7)).
+    #
     # @return [Integer] number of matching intervals
-    def count
-      @cached_count ||= begin
-        count = 0
-        traverse(@root) { |_| count += 1 }
-        count
+    def count(*args, &block)
+      if args.empty? && block.nil?
+        @cached_count ||= begin
+          c = 0
+          traverse(@root) { |_| c += 1 }
+          c
+        end
+      else
+        super
       end
     end
 
