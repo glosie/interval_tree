@@ -29,7 +29,7 @@ module IntervalTree
 
       search_range = interval.exclude_end? ? (range_begin...range_end) : (range_begin..range_end)
 
-      SearchResultsEnumerator.new(root, search_range, range_begin)
+      SearchResultsEnumerator.new(root, search_range, range_begin, range_end)
     end
 
     private

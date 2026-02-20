@@ -16,7 +16,7 @@ module IntervalTree
       @root = Node.new(5..6, @node3, @node4, 8)
 
       @search_interval = 2..6
-      @results = SearchResultsEnumerator.new(@root, @search_interval, @search_interval.min)
+      @results = SearchResultsEnumerator.new(@root, @search_interval, @search_interval.min, @search_interval.max)
     end
 
     def test_implements_enumerable
@@ -55,7 +55,7 @@ module IntervalTree
     end
 
     def test_first_without_argument_on_empty_results_returns_nil
-      empty_results = SearchResultsEnumerator.new(@root, 10..20, 10)
+      empty_results = SearchResultsEnumerator.new(@root, 10..20, 10, 20)
       assert_nil empty_results.first
     end
 
@@ -76,7 +76,7 @@ module IntervalTree
     def test_empty_returns_true_when_no_results
       # Search for interval that doesn't overlap with any nodes
       no_match_interval = 20..30
-      empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min)
+      empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min, no_match_interval.max)
       assert empty_results.empty?
     end
 
@@ -105,7 +105,7 @@ module IntervalTree
 
     def test_count_size_length_return_zero_for_empty_results
       no_match_interval = 20..30
-      empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min)
+      empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min, no_match_interval.max)
       assert_equal 0, empty_results.count
       assert_equal 0, empty_results.size
       assert_equal 0, empty_results.length
@@ -119,7 +119,7 @@ module IntervalTree
 
     def test_equality_with_empty_array
       no_match_interval = 20..30
-      empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min)
+      empty_results = SearchResultsEnumerator.new(@root, no_match_interval, no_match_interval.min, no_match_interval.max)
       assert_equal [], empty_results.to_a
       assert empty_results == []
     end
@@ -161,19 +161,24 @@ module IntervalTree
     end
 
     def test_handles_complex_overlapping_scenarios
-      # Create a more complex tree structure
+      # Create a valid BST sorted by [range.min, range.max]
       # Ranges: [2..3, 3..5, 4..10, 5..7, 6..10, 7..9, 9..11]
+      #
+      #            5..7 (max=11)
+      #           /            \
+      #      3..5 (max=10)   7..9 (max=11)
+      #      /       \       /       \
+      #    2..3    4..10   6..10    9..11
       n1 = Node.new(2..3, nil, nil, 3)
       n2 = Node.new(4..10, nil, nil, 10)
       n3 = Node.new(3..5, n1, n2, 10)
       n4 = Node.new(6..10, nil, nil, 10)
-      n5 = Node.new(7..9, nil, nil, 9)
-      n6 = Node.new(9..11, nil, nil, 11)
-      n7 = Node.new(5..7, n4, n5, 10)
-      complex_root = Node.new(n6.range, n3, n7, 11)
+      n5 = Node.new(9..11, nil, nil, 11)
+      n6 = Node.new(7..9, n4, n5, 11)
+      complex_root = Node.new(5..7, n3, n6, 11)
 
       search_interval = 4..8
-      results = SearchResultsEnumerator.new(complex_root, search_interval, search_interval.min)
+      results = SearchResultsEnumerator.new(complex_root, search_interval, search_interval.min, search_interval.max)
 
       # Expected overlapping ranges with 4..8: [3..5, 4..10, 5..7, 6..10, 7..9]
       expected = [3..5, 4..10, 5..7, 6..10, 7..9]
@@ -207,7 +212,7 @@ module IntervalTree
 
     def test_works_with_nil_root
       # empty tree
-      nil_results = SearchResultsEnumerator.new(nil, 1..10, 1)
+      nil_results = SearchResultsEnumerator.new(nil, 1..10, 1, 10)
 
       assert nil_results.empty?
       assert_equal [], nil_results.to_a
@@ -217,7 +222,7 @@ module IntervalTree
 
     def test_works_with_single_node
       single_node = Node.new(5..10, nil, nil, 10)
-      single_results = SearchResultsEnumerator.new(single_node, 7..8, 7)
+      single_results = SearchResultsEnumerator.new(single_node, 7..8, 7, 8)
 
       assert_equal [5..10], single_results.to_a
       assert_equal 1, single_results.count

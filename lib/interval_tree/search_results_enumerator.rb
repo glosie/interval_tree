@@ -5,10 +5,11 @@ module IntervalTree
   class SearchResultsEnumerator
     include Enumerable
 
-    def initialize(root, interval, interval_min)
+    def initialize(root, interval, interval_min, interval_max)
       @root = root
       @interval = interval
       @interval_min = interval_min
+      @interval_max = interval_max
     end
 
     # Enumerate through search results lazily
@@ -76,6 +77,10 @@ module IntervalTree
       if left_subtree && (@interval_min <= left_subtree.max)
         traverse(left_subtree, &block)
       end
+
+      # if search interval ends before this node starts, nothing here
+      # or to the right can overlap (BST is sorted by range.min)
+      return if @interval_max < node.range.min
 
       # process current interval if it overlaps
       block.call(node.range) if node.overlaps?(@interval)
