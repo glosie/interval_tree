@@ -3,7 +3,11 @@
 module IntervalTree
   Node = Struct.new(:range, :left, :right, :max) do
     def overlaps?(other)
-      range.min <= other.max && range.max >= other.min
+      if other.exclude_end?
+        range.min < other.end && range.max >= other.begin
+      else
+        range.min <= other.end && range.max >= other.begin
+      end
     end
   end
 end

@@ -61,10 +61,32 @@ module IntervalTree
       t = Tree.new([])
 
       assert_empty t.search(0)
-      assert_empty t.search(nil)
       assert_empty t.search(0..0)
       assert_empty t.search(1..3)
       assert_empty t.search(1..1)
+    end
+
+    def test_search_nil_raises_argument_error
+      t = Tree.new([1..3, 4..6, 7..9])
+      assert_raises(ArgumentError) { t.search(nil) }
+
+      empty_tree = Tree.new([])
+      assert_raises(ArgumentError) { empty_tree.search(nil) }
+    end
+
+    def test_search_beginless_range
+      t = Tree.new([1..3, 4..6, 7..9])
+      assert_equal t.search(..5), [1..3, 4..6]
+    end
+
+    def test_search_beginless_exclusive_range
+      t = Tree.new([1..3, 4..6, 7..9])
+      assert_equal t.search(...4), [1..3]
+    end
+
+    def test_search_endless_range
+      t = Tree.new([1..3, 4..6, 7..9])
+      assert_equal t.search(5..), [4..6, 7..9]
     end
 
     def test_find_overlapping_intervals

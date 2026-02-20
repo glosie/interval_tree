@@ -18,17 +18,18 @@ module IntervalTree
     # @param interval [Range] the search interval
     # @return [SearchResultsEnumerator] enumerator for lazy evaluation of search results
     def search(interval)
+      raise ArgumentError, "search interval cannot be nil" if interval.nil?
+
       interval = interval.is_a?(Range) ? interval : (interval..interval)
 
-      # Cache interval.min to avoid repeated method calls during traversal
-      begin
-        interval_min = interval.min
-      # Handle edge case of beginless ranges
-      rescue RangeError
-        interval_min = interval.begin
-      end
+      # Normalize beginless/endless ranges to use infinity bounds so that
+      # .min/.max never raise and nil never propagates into comparisons
+      range_begin = interval.begin || -Float::INFINITY
+      range_end = interval.end || Float::INFINITY
 
-      SearchResultsEnumerator.new(root, interval, interval_min)
+      search_range = interval.exclude_end? ? (range_begin...range_end) : (range_begin..range_end)
+
+      SearchResultsEnumerator.new(root, search_range, range_begin)
     end
 
     private
