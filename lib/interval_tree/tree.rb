@@ -32,6 +32,11 @@ module IntervalTree
       SearchResults.new(root, search_range, range_begin, range_end)
     end
 
+    def insert(range)
+      @root = insert_node(@root, range)
+      self
+    end
+
     private
 
     def construct(ranges, start_idx, end_idx)
@@ -56,6 +61,75 @@ module IntervalTree
 
     def node_height(node)
       node&.height || 0
+    end
+
+    def balance_factor(node)
+      node_height(node.left) - node_height(node.right)
+    end
+
+    def refresh(node)
+      max_val = node.range.max
+      max_val = [max_val, node.left.max].max if node.left
+      max_val = [max_val, node.right.max].max if node.right
+      node.max = max_val
+      node.height = 1 + [node_height(node.left), node_height(node.right)].max
+      node
+    end
+
+    def rotate_left(node)
+      new_root = node.right
+      node.right = new_root.left
+      new_root.left = node
+      refresh(node)
+      refresh(new_root)
+      new_root
+    end
+
+    def rotate_right(node)
+      new_root = node.left
+      node.left = new_root.right
+      new_root.right = node
+      refresh(node)
+      refresh(new_root)
+      new_root
+    end
+
+    def rebalance(node)
+      bf = balance_factor(node)
+
+      if bf > 1
+        if balance_factor(node.left) < 0
+          node.left = rotate_left(node.left)
+        end
+        rotate_right(node)
+      elsif bf < -1
+        if balance_factor(node.right) > 0
+          node.right = rotate_right(node.right)
+        end
+        rotate_left(node)
+      else
+        node
+      end
+    end
+
+    def insert_node(node, range)
+      return Node.new(range, nil, nil, range.max, 1) if node.nil?
+
+      cmp = compare_sort_keys(range, node.range)
+
+      if cmp <= 0
+        node.left = insert_node(node.left, range)
+      else
+        node.right = insert_node(node.right, range)
+      end
+
+      refresh(node)
+      rebalance(node)
+    end
+
+    def compare_sort_keys(a, b)
+      cmp = a.min <=> b.min
+      cmp == 0 ? a.max <=> b.max : cmp
     end
 
   end

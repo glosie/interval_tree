@@ -114,5 +114,89 @@ module IntervalTree
 
       Tree.new(intervals)
     end
+
+    # --- Insert tests ---
+
+    def test_insert_into_empty_tree
+      t = Tree.new([])
+      t.insert(1..5)
+
+      assert_equal 1..5, t.root.range
+      assert_nil t.root.left
+      assert_nil t.root.right
+      assert_equal 5, t.root.max
+      assert_equal 1, t.root.height
+    end
+
+    def test_insert_maintains_bst_ordering
+      t = Tree.new([])
+      [3..4, 1..2, 5..6, 2..3, 4..5].each { |r| t.insert(r) }
+
+      ranges = collect_inorder(t.root)
+      sort_keys = ranges.map { |r| [r.min, r.max] }
+      assert_equal sort_keys.sort, sort_keys
+    end
+
+    def test_insert_maintains_avl_invariants
+      t = Tree.new([])
+      (1..20).each { |i| t.insert(i..(i + 5)) }
+      assert_avl_invariants(t.root)
+    end
+
+    def test_insert_returns_self_for_chaining
+      t = Tree.new([])
+      result = t.insert(1..5).insert(2..6)
+      assert_equal t, result
+      assert_equal 2, t.search(1..10).count
+    end
+
+    def test_insert_duplicate_ranges
+      t = Tree.new([])
+      t.insert(1..5)
+      t.insert(1..5)
+      assert_equal [1..5, 1..5], t.search(1..5).to_a
+    end
+
+    def test_insert_search_finds_new_range
+      t = Tree.new([1..3, 5..7])
+      t.insert(4..6)
+      assert_includes t.search(4..6).to_a, 4..6
+    end
+
+    private
+
+    def assert_avl_invariants(node, min_key = nil, max_key = nil)
+      return if node.nil?
+
+      key = [node.range.min, node.range.max]
+
+      if min_key
+        assert((min_key <=> key) <= 0, "BST violation: #{min_key} should be <= #{key}")
+      end
+      if max_key
+        assert((key <=> max_key) <= 0, "BST violation: #{key} should be <= #{max_key}")
+      end
+
+      expected_max = node.range.max
+      expected_max = [expected_max, node.left.max].max if node.left
+      expected_max = [expected_max, node.right.max].max if node.right
+      assert_equal expected_max, node.max, "Max violation at node #{node.range}"
+
+      left_h = node.left&.height || 0
+      right_h = node.right&.height || 0
+      expected_height = 1 + [left_h, right_h].max
+      assert_equal expected_height, node.height, "Height violation at node #{node.range}"
+
+      bf = (left_h - right_h).abs
+      assert bf <= 1, "Balance violation at node #{node.range}: bf=#{bf}"
+
+      assert_avl_invariants(node.left, min_key, key)
+      assert_avl_invariants(node.right, key, max_key)
+    end
+
+    def collect_inorder(node)
+      return [] if node.nil?
+      collect_inorder(node.left) + [node.range] + collect_inorder(node.right)
+    end
   end
 end
