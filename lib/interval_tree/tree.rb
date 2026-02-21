@@ -16,7 +16,7 @@ module IntervalTree
     # Search for all intervals in the tree that intersect with `range`
     #
     # @param interval [Range] the search interval
-    # @return [SearchResultsEnumerator] enumerator for lazy evaluation of search results
+    # @return [SearchResults] lazy enumerable of matching intervals
     def search(interval)
       raise ArgumentError, "search interval cannot be nil" if interval.nil?
 
@@ -29,7 +29,7 @@ module IntervalTree
 
       search_range = interval.exclude_end? ? (range_begin...range_end) : (range_begin..range_end)
 
-      SearchResultsEnumerator.new(root, search_range, range_begin, range_end)
+      SearchResults.new(root, search_range, range_begin, range_end)
     end
 
     private

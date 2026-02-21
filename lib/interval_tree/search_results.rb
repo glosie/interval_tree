@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module IntervalTree
-  # Enumerator for search results that provides lazy evaluation capabilities.
-  class SearchResultsEnumerator
+  # Search results collection that provides lazy evaluation capabilities.
+  class SearchResults
     include Enumerable
 
     def initialize(root, interval, interval_min, interval_max)

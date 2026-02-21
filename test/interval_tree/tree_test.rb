@@ -94,11 +94,11 @@ module IntervalTree
       assert_equal t.search(4..8), [3..5, 4..10, 5..7, 6..10, 7..9]
     end
 
-    def test_search_returns_search_results_enumerator
+    def test_search_returns_search_results
       t = Tree.new([1..3, 2..4, 5..7, 6..8])
       results = t.search(2..6)
 
-      assert_kind_of IntervalTree::SearchResultsEnumerator, results
+      assert_kind_of IntervalTree::SearchResults, results
     end
 
     def test_does_not_mutate_input_array
