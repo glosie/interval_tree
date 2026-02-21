@@ -50,7 +50,12 @@ module IntervalTree
       max_val = [max_val, left.max].max if left
       max_val = [max_val, right.max].max if right
 
-      Node.new(range, left, right, max_val)
+      height = 1 + [node_height(left), node_height(right)].max
+      Node.new(range, left, right, max_val, height)
+    end
+
+    def node_height(node)
+      node&.height || 0
     end
 
   end

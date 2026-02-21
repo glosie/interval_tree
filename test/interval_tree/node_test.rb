@@ -14,7 +14,7 @@ class IntervalTree::NodeTest < Minitest::Test
   def test_node_creation
     left_child = IntervalTree::Node.new(@range_0_2)
     right_child = IntervalTree::Node.new(@range_8_10)
-    parent = IntervalTree::Node.new(@range_3_7, left_child, right_child, 10)
+    parent = IntervalTree::Node.new(@range_3_7, left_child, right_child, 10, 2)
 
     assert_equal @range_3_7, parent.range
     assert_equal left_child, parent.left
@@ -96,11 +96,11 @@ class IntervalTree::NodeTest < Minitest::Test
   end
 
   def test_node_with_complex_tree_structure
-    leaf1 = IntervalTree::Node.new(1..2, nil, nil, 2)
-    leaf2 = IntervalTree::Node.new(4..5, nil, nil, 5)
-    leaf3 = IntervalTree::Node.new(7..8, nil, nil, 8)
-    internal1 = IntervalTree::Node.new(2..3, leaf1, leaf2, 5)
-    root = IntervalTree::Node.new(5..6, internal1, leaf3, 8)
+    leaf1 = IntervalTree::Node.new(1..2, nil, nil, 2, 1)
+    leaf2 = IntervalTree::Node.new(4..5, nil, nil, 5, 1)
+    leaf3 = IntervalTree::Node.new(7..8, nil, nil, 8, 1)
+    internal1 = IntervalTree::Node.new(2..3, leaf1, leaf2, 5, 2)
+    root = IntervalTree::Node.new(5..6, internal1, leaf3, 8, 3)
 
     assert_equal (5..6), root.range
     assert_equal internal1, root.left

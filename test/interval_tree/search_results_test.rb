@@ -9,11 +9,11 @@ module IntervalTree
       #   2..4    7..8
       #   /  \
       # 1..3 3..8
-      @node1 = Node.new(1..3, nil, nil, 3)
-      @node2 = Node.new(3..8, nil, nil, 8)
-      @node3 = Node.new(2..4, @node1, @node2, 8)
-      @node4 = Node.new(7..8, nil, nil, 8)
-      @root = Node.new(5..6, @node3, @node4, 8)
+      @node1 = Node.new(1..3, nil, nil, 3, 1)
+      @node2 = Node.new(3..8, nil, nil, 8, 1)
+      @node3 = Node.new(2..4, @node1, @node2, 8, 2)
+      @node4 = Node.new(7..8, nil, nil, 8, 1)
+      @root = Node.new(5..6, @node3, @node4, 8, 3)
 
       @search_interval = 2..6
       @results = SearchResults.new(@root, @search_interval, @search_interval.min, @search_interval.max)
@@ -169,13 +169,13 @@ module IntervalTree
       #      3..5 (max=10)   7..9 (max=11)
       #      /       \       /       \
       #    2..3    4..10   6..10    9..11
-      n1 = Node.new(2..3, nil, nil, 3)
-      n2 = Node.new(4..10, nil, nil, 10)
-      n3 = Node.new(3..5, n1, n2, 10)
-      n4 = Node.new(6..10, nil, nil, 10)
-      n5 = Node.new(9..11, nil, nil, 11)
-      n6 = Node.new(7..9, n4, n5, 11)
-      complex_root = Node.new(5..7, n3, n6, 11)
+      n1 = Node.new(2..3, nil, nil, 3, 1)
+      n2 = Node.new(4..10, nil, nil, 10, 1)
+      n3 = Node.new(3..5, n1, n2, 10, 2)
+      n4 = Node.new(6..10, nil, nil, 10, 1)
+      n5 = Node.new(9..11, nil, nil, 11, 1)
+      n6 = Node.new(7..9, n4, n5, 11, 2)
+      complex_root = Node.new(5..7, n3, n6, 11, 3)
 
       search_interval = 4..8
       results = SearchResults.new(complex_root, search_interval, search_interval.min, search_interval.max)
@@ -221,7 +221,7 @@ module IntervalTree
     end
 
     def test_works_with_single_node
-      single_node = Node.new(5..10, nil, nil, 10)
+      single_node = Node.new(5..10, nil, nil, 10, 1)
       single_results = SearchResults.new(single_node, 7..8, 7, 8)
 
       assert_equal [5..10], single_results.to_a
