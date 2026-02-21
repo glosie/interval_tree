@@ -37,6 +37,12 @@ module IntervalTree
       self
     end
 
+    def delete(range)
+      deleted = []
+      @root = delete_node(@root, range, deleted)
+      deleted.first
+    end
+
     private
 
     def construct(ranges, start_idx, end_idx)
@@ -127,9 +133,51 @@ module IntervalTree
       rebalance(node)
     end
 
+    def delete_node(node, range, deleted)
+      return nil if node.nil?
+
+      cmp = compare_sort_keys(range, node.range)
+
+      if cmp < 0
+        node.left = delete_node(node.left, range, deleted)
+      elsif cmp > 0
+        node.right = delete_node(node.right, range, deleted)
+      else
+        if range == node.range
+          deleted << node.range
+          if node.left.nil? && node.right.nil?
+            return nil
+          elsif node.left.nil?
+            return node.right
+          elsif node.right.nil?
+            return node.left
+          else
+            successor_range = find_min(node.right)
+            node.range = successor_range
+            node.right = delete_node(node.right, successor_range, [])
+          end
+        else
+          # Same sort key but different range (e.g. different exclude_end?).
+          # insert places equal keys left, so search left first.
+          node.left = delete_node(node.left, range, deleted)
+          if deleted.empty?
+            node.right = delete_node(node.right, range, deleted)
+          end
+        end
+      end
+
+      refresh(node)
+      rebalance(node)
+    end
+
     def compare_sort_keys(a, b)
       cmp = a.min <=> b.min
       cmp == 0 ? a.max <=> b.max : cmp
+    end
+
+    def find_min(node)
+      return node.range if node.left.nil?
+      find_min(node.left)
     end
 
   end

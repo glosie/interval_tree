@@ -163,6 +163,160 @@ module IntervalTree
       assert_includes t.search(4..6).to_a, 4..6
     end
 
+    # --- Delete tests ---
+
+    def test_delete_leaf_node
+      t = Tree.new([1..2, 3..4, 5..6])
+      t.delete(1..2)
+      refute_includes t.search(0..10).to_a, 1..2
+      assert_avl_invariants(t.root)
+    end
+
+    def test_delete_node_with_one_child
+      t = Tree.new([1..2, 3..4, 5..6, 7..8])
+      t.delete(3..4)
+      refute_includes t.search(0..10).to_a, 3..4
+      assert_includes t.search(0..10).to_a, 1..2
+      assert_avl_invariants(t.root)
+    end
+
+    def test_delete_node_with_two_children
+      t = Tree.new([1..2, 3..4, 5..6, 7..8, 9..10])
+      root_range = t.root.range
+      t.delete(root_range)
+      refute_includes t.search(0..20).to_a, root_range
+      assert_equal 4, t.search(0..20).count
+      assert_avl_invariants(t.root)
+    end
+
+    def test_delete_root_node
+      t = Tree.new([1..3, 4..6, 7..9])
+      root_range = t.root.range
+      t.delete(root_range)
+      refute_includes t.search(0..20).to_a, root_range
+      assert_avl_invariants(t.root)
+    end
+
+    def test_delete_returns_deleted_range
+      t = Tree.new([1..3, 4..6, 7..9])
+      result = t.delete(4..6)
+      assert_equal 4..6, result
+    end
+
+    def test_delete_nonexistent_returns_nil
+      t = Tree.new([1..3, 4..6, 7..9])
+      result = t.delete(10..20)
+      assert_nil result
+    end
+
+    def test_delete_maintains_avl_invariants
+      t = Tree.new([])
+      ranges = (1..20).map { |i| i..(i + 5) }
+      ranges.each { |r| t.insert(r) }
+
+      ranges.shuffle(random: Random.new(42)).first(10).each do |r|
+        t.delete(r)
+        assert_avl_invariants(t.root)
+      end
+    end
+
+    def test_delete_removed_from_search
+      t = Tree.new([1..3, 4..6, 7..9])
+      t.delete(4..6)
+      refute_includes t.search(4..6).to_a, 4..6
+    end
+
+    def test_delete_one_of_duplicates
+      t = Tree.new([1..5, 1..5])
+      t.delete(1..5)
+      assert_equal [1..5], t.search(1..5).to_a
+    end
+
+    def test_delete_single_node_tree
+      t = Tree.new([1..5])
+      t.delete(1..5)
+      assert_nil t.root
+    end
+
+    def test_delete_from_empty_tree
+      t = Tree.new([])
+      result = t.delete(1..5)
+      assert_nil result
+    end
+
+    def test_delete_respects_exclude_end
+      t = Tree.new([1...6])
+      result = t.delete(1..5)
+      assert_nil result
+      assert_includes t.search(1..5).to_a, 1...6
+    end
+
+    def test_delete_same_sort_key_different_exclude_end
+      t = Tree.new([])
+      t.insert(1...6)
+      t.insert(1..5)
+
+      result = t.delete(1..5)
+      assert_equal 1..5, result
+      assert_equal [1...6], t.search(1..5).to_a
+      assert_avl_invariants(t.root)
+    end
+
+    def test_delete_same_sort_key_constructor_built
+      t = Tree.new([1..5, 1...6])
+      result = t.delete(1..5)
+      assert_equal 1..5, result
+      assert_equal [1...6], t.search(1..5).to_a
+      assert_avl_invariants(t.root) if t.root
+    end
+
+    def test_delete_successor_with_same_sort_key_different_exclude_end
+      t = Tree.new([])
+      [5..10, 3..4, 7...9, 7..8].each { |r| t.insert(r) }
+
+      t.delete(5..10)
+      refute_includes t.search(0..20).to_a, 5..10
+      assert_avl_invariants(t.root)
+
+      # no duplicates — 7..8 should appear exactly once
+      results = t.search(7..8).to_a
+      assert_equal 1, results.count(7..8), "7..8 should appear exactly once after delete"
+    end
+
+    # --- Integration test ---
+
+    def test_random_insert_delete_stress
+      rng = Random.new(12345)
+      t = Tree.new([])
+      brute = []
+
+      100.times do
+        if brute.empty? || rng.rand < 0.7
+          a = rng.rand(100)
+          b = a + rng.rand(20) + 1
+          range = a..b
+          t.insert(range)
+          brute << range
+        else
+          range = brute.sample(random: rng)
+          deleted = t.delete(range)
+          assert_equal range, deleted
+          idx = brute.index(range)
+          brute.delete_at(idx)
+        end
+
+        assert_avl_invariants(t.root)
+      end
+
+      if brute.any?
+        all_min = brute.map(&:min).min
+        all_max = brute.map(&:max).max
+        tree_results = t.search(all_min..all_max).to_a.sort_by { |r| [r.min, r.max] }
+        brute_sorted = brute.sort_by { |r| [r.min, r.max] }
+        assert_equal brute_sorted, tree_results
+      end
+    end
+
     private
 
     def assert_avl_invariants(node, min_key = nil, max_key = nil)
